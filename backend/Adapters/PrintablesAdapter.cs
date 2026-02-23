@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using ModelAggregator.Api.DTOs;
 using ModelAggregator.Api.Models;
 
@@ -33,28 +34,50 @@ public class PrintablesAdapter(HttpClient http, ILogger<PrintablesAdapter> logge
         var result = new AdapterSearchResult { Source = "Printables" };
         var offset = (page - 1) * pageSize;
 
-        // Map sort parameter to Printables ordering enum
+        // Map sort parameter to Printables ordering enum (SearchChoicesEnum)
+        // Default (null) = relevance/best match
         var ordering = sort switch
         {
-            "newest" => "NEWEST",
-            "likes" => "MOST_LIKED",
-            "popular" => "MOST_DOWNLOADED",
-            "price_asc" => "PRICE_LOW_TO_HIGH",
-            "price_desc" => "PRICE_HIGH_TO_LOW",
-            _ => (string?)null // Default relevance
+            "newest" => "latest",
+            "likes" => "likes_count",
+            "popular" => "download_count",
+            "price_asc" => "price_low_to_high",
+            "price_desc" => "price_high_to_low",
+            _ => (string?)null  // null = default relevance
         };
-
-        var orderingArg = ordering != null ? $", ordering: {ordering}" : "";
 
         var gql = new
         {
-            query = $@"query SearchPrints($q: String!, $limit: Int!, $offset: Int!) {{
-                searchPrints2(query: $q, limit: $limit, offset: $offset{orderingArg}) {{
+            operationName = "SearchModels",
+            query = $@"query SearchModels($query: String!, $limit: Int, $cursor: Int, $ordering: SearchChoicesEnum, $categoryId: ID, $featured: Boolean, $hasMake: Boolean, $publishedDateLimitDays: Int, $competitionAwarded: Boolean) {{
+                result: searchPrints2(
+                    query: $query
+                    printType: print
+                    limit: $limit
+                    offset: $cursor
+                    ordering: $ordering
+                    categoryId: $categoryId
+                    featured: $featured
+                    hasMake: $hasMake
+                    publishedDateLimitDays: $publishedDateLimitDays
+                    competitionAwarded: $competitionAwarded
+                ) {{
                     totalCount
                     items {{ {PrintFieldsFragment} }}
                 }}
             }}",
-            variables = new { q = query, limit = pageSize, offset }
+            variables = new 
+            { 
+                query, 
+                limit = pageSize, 
+                cursor = offset, 
+                ordering,
+                categoryId = (string?)null,
+                featured = false,
+                hasMake = false,
+                publishedDateLimitDays = (int?)null,
+                competitionAwarded = false
+            }
         };
 
         try
@@ -69,9 +92,9 @@ public class PrintablesAdapter(HttpClient http, ILogger<PrintablesAdapter> logge
                 return result;
             }
 
-            if (!root.TryGetProperty("data", out var data) || !data.TryGetProperty("searchPrints2", out var searchResult))
+            if (!root.TryGetProperty("data", out var data) || !data.TryGetProperty("result", out var searchResult))
             {
-                _logger.LogWarning("Printables search returned no 'searchPrints2' block.");
+                _logger.LogWarning("Printables search returned no 'result' block.");
                 return result;
             }
 
@@ -100,16 +123,17 @@ public class PrintablesAdapter(HttpClient http, ILogger<PrintablesAdapter> logge
         var result = new AdapterSearchResult { Source = "Printables" };
         var offset = (page - 1) * pageSize;
 
-        // Use 'prints' query with featured ordering for trending
+        // Use 'morePrints' query for trending
         var gql = new
         {
-            query = $@"query TrendingPrints($limit: Int!, $offset: Int!) {{
-                prints(limit: $limit, offset: $offset, ordering: ""-likes_count_7_days"") {{
-                    {PrintFieldsFragment}
+            operationName = "ModelList",
+            query = $@"query ModelList($limit: Int!, $cursor: String, $ordering: String) {{
+                models: morePrints(limit: $limit, cursor: $cursor, ordering: $ordering) {{
+                    cursor
+                    items {{ {PrintFieldsFragment} }}
                 }}
-                printsCount {{ }}
             }}",
-            variables = new { limit = pageSize, offset }
+            variables = new { limit = pageSize, cursor = (string?)null, ordering = "trending" }
         };
 
         try
@@ -125,15 +149,15 @@ public class PrintablesAdapter(HttpClient http, ILogger<PrintablesAdapter> logge
                 return await SearchAsync("print", page, pageSize, "likes", ct);
             }
 
-            if (!root.TryGetProperty("data", out var data) || !data.TryGetProperty("prints", out var prints))
+            if (!root.TryGetProperty("data", out var data) || !data.TryGetProperty("models", out var modelsBlock))
             {
-                _logger.LogWarning("Printables trending returned no 'prints' block, falling back to search.");
+                _logger.LogWarning("Printables trending returned no 'models' block, falling back to search.");
                 return await SearchAsync("print", page, pageSize, "likes", ct);
             }
 
-            if (prints.ValueKind == JsonValueKind.Array)
+            if (modelsBlock.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array)
             {
-                foreach (var item in prints.EnumerateArray())
+                foreach (var item in items.EnumerateArray())
                 {
                     result.Items.Add(MapToDto(item));
                 }
@@ -230,8 +254,14 @@ public class PrintablesAdapter(HttpClient http, ILogger<PrintablesAdapter> logge
     private async Task<HttpResponseMessage> PostGraphQlAsync(object gql, CancellationToken ct)
     {
         var json = JsonSerializer.Serialize(gql);
+        _logger.LogDebug("Printables GraphQL request: {Json}", json);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _http.PostAsync(GraphQlEndpoint, content, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync(ct);
+            _logger.LogError("Printables GraphQL {Status}: {Body}", response.StatusCode, body.Length > 500 ? body[..500] : body);
+        }
         response.EnsureSuccessStatusCode();
         return response;
     }
