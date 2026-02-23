@@ -1,7 +1,5 @@
 using System.Net;
-using System.Net.Http;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using ModelAggregator.Api.DTOs;
 using ModelAggregator.Api.Models;
@@ -9,27 +7,20 @@ using ModelAggregator.Api.Models;
 namespace ModelAggregator.Api.Adapters;
 
 /// <summary>
-/// Adapter for MakerWorld (Bambu Lab) using the Next.js _next/data SSR endpoint.
-/// Uses a standalone HttpClient with proper browser headers to bypass Cloudflare,
-/// since the DI-configured IHttpClientFactory client gets blocked.
+/// Adapter for MakerWorld (Bambu Lab) using the direct REST API.
+/// Uses /api/v1/search-service/select/design2 for search/trending
+/// and /api/v1/design/{id} for model details.
 /// </summary>
-public partial class MakerWorldAdapter : IModelSourceAdapter
+public class MakerWorldAdapter : IModelSourceAdapter
 {
     private readonly ILogger<MakerWorldAdapter> _logger;
-    private const string BaseUrl = "https://makerworld.com";
-    private const string SiteBaseUrl = "https://makerworld.com/en/models/";
-
-    // Cached buildId (changes on each MakerWorld deployment)
-    private static string? _buildId;
-    private static DateTime _buildIdFetchedAt = DateTime.MinValue;
-    private static readonly TimeSpan BuildIdTtl = TimeSpan.FromHours(1);
-    private static readonly SemaphoreSlim _buildIdLock = new(1, 1);
-
     private readonly HttpClient _http;
+    private const string BaseUrl = "https://makerworld.com";
+    private const string SearchApiUrl = $"{BaseUrl}/api/v1/search-service/select/design2";
+    private const string SiteBaseUrl = "https://makerworld.com/en/models/";
 
     public MakerWorldAdapter(HttpClient http, ILogger<MakerWorldAdapter> logger)
     {
-        // We use the DI client which is configured in Program.cs with proper decompression
         _http = http;
         _logger = logger;
     }
@@ -37,26 +28,21 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
     public ModelSource Source => ModelSource.MakerWorld;
 
     /// <summary>Ensures the standard browser headers are present.</summary>
-    private void EnsureHeaders(string? referer = null)
+    private void EnsureHeaders()
     {
         _http.DefaultRequestHeaders.Remove("User-Agent");
-        _http.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
-        
-        if (referer != null)
-        {
-            _http.DefaultRequestHeaders.Referrer = new Uri(referer);
-        }
-        else
-        {
-            _http.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
-        }
+        _http.DefaultRequestHeaders.Add("User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
+
+        _http.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
 
         if (!_http.DefaultRequestHeaders.Contains("Origin"))
             _http.DefaultRequestHeaders.Add("Origin", BaseUrl);
 
         if (!_http.DefaultRequestHeaders.Contains("Sec-Ch-Ua"))
-            _http.DefaultRequestHeaders.Add("Sec-Ch-Ua", "\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\"121\", \"Chromium\";v=\"121\"");
-            
+            _http.DefaultRequestHeaders.Add("Sec-Ch-Ua",
+                "\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\"121\", \"Chromium\";v=\"121\"");
+
         if (!_http.DefaultRequestHeaders.Contains("Sec-Ch-Ua-Mobile"))
             _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Mobile", "?0");
 
@@ -81,21 +67,17 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
 
         try
         {
-            var buildId = await GetBuildIdAsync(ct);
-            if (string.IsNullOrEmpty(buildId)) return result;
+            var url = $"{SearchApiUrl}?keyword={Uri.EscapeDataString(query)}&limit={pageSize}&offset={offset}";
 
-            var url = $"{BaseUrl}/_next/data/{buildId}/en/search/models.json?keyword={Uri.EscapeDataString(query)}&offset={offset}";
-            
             var json = await FetchJsonAsync(url, ct);
             if (json == null) return result;
 
-            if (!json.RootElement.TryGetProperty("pageProps", out var pageProps)) return result;
+            var root = json.RootElement;
+            result.TotalCount = root.TryGetProperty("total", out var total) ? total.GetInt32() : 0;
 
-            result.TotalCount = pageProps.TryGetProperty("total", out var total) ? total.GetInt32() : 0;
-
-            if (pageProps.TryGetProperty("designs", out var designs) && designs.ValueKind == JsonValueKind.Array)
+            if (root.TryGetProperty("hits", out var hits) && hits.ValueKind == JsonValueKind.Array)
             {
-                foreach (var item in designs.EnumerateArray())
+                foreach (var item in hits.EnumerateArray())
                 {
                     result.Items.Add(MapToDto(item));
                 }
@@ -120,22 +102,18 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
 
         try
         {
-            var buildId = await GetBuildIdAsync(ct);
-            if (string.IsNullOrEmpty(buildId)) return result;
-
-            // Search without keyword returns trending/popular models
-            var url = $"{BaseUrl}/_next/data/{buildId}/en/search/models.json?offset={offset}";
+            // Empty keyword with sort=popular returns trending models
+            var url = $"{SearchApiUrl}?keyword=&limit={pageSize}&offset={offset}";
 
             var json = await FetchJsonAsync(url, ct);
             if (json == null) return result;
 
-            if (!json.RootElement.TryGetProperty("pageProps", out var pageProps)) return result;
+            var root = json.RootElement;
+            result.TotalCount = root.TryGetProperty("total", out var total) ? total.GetInt32() : 0;
 
-            result.TotalCount = pageProps.TryGetProperty("total", out var total) ? total.GetInt32() : 0;
-
-            if (pageProps.TryGetProperty("designs", out var designs) && designs.ValueKind == JsonValueKind.Array)
+            if (root.TryGetProperty("hits", out var hits) && hits.ValueKind == JsonValueKind.Array)
             {
-                foreach (var item in designs.EnumerateArray())
+                foreach (var item in hits.EnumerateArray())
                 {
                     result.Items.Add(MapToDto(item));
                 }
@@ -155,43 +133,52 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
     {
         try
         {
-            var buildId = await GetBuildIdAsync(ct);
-            if (string.IsNullOrEmpty(buildId)) return null;
+            // externalId can be "686760-cat" or "686760"
+            // Extract the slug part (after first dash) to use as search keyword
+            var parts = externalId.Split('-', 2);
+            var slug = parts.Length > 1 ? parts[1].Replace("-", " ") : parts[0];
 
-            // externalId can be "40146" or "40146-benchy-bambu-pla-basic"
-            var url = $"{BaseUrl}/_next/data/{buildId}/en/models/{externalId}.json";
-
+            // Use the search API to find the model (the search response includes full image data)
+            var url = $"{SearchApiUrl}?keyword={Uri.EscapeDataString(slug)}&limit=5&offset=0";
             var json = await FetchJsonAsync(url, ct);
             if (json == null) return null;
 
-            if (!json.RootElement.TryGetProperty("pageProps", out var pageProps)) return null;
+            var root = json.RootElement;
+            if (!root.TryGetProperty("hits", out var hits) || hits.ValueKind != JsonValueKind.Array)
+                return null;
 
-            // Check for redirect (detail by ID only redirects to ID-slug form)
-            if (pageProps.TryGetProperty("__N_REDIRECT", out var redirect))
+            // Find the matching model by ID
+            var numericId = parts[0];
+            JsonElement? matchingDesign = null;
+            foreach (var item in hits.EnumerateArray())
             {
-                var redirectPath = redirect.GetString();
-                if (!string.IsNullOrEmpty(redirectPath))
+                if (item.TryGetProperty("id", out var idProp))
                 {
-                    var redirectUrl = $"{BaseUrl}/_next/data/{buildId}{redirectPath}.json";
-                    json = await FetchJsonAsync(redirectUrl, ct);
-                    if (json == null) return null;
-                    if (!json.RootElement.TryGetProperty("pageProps", out pageProps)) return null;
+                    var itemId = idProp.ValueKind == JsonValueKind.Number
+                        ? idProp.GetInt64().ToString()
+                        : idProp.GetString() ?? "";
+                    if (itemId == numericId)
+                    {
+                        matchingDesign = item;
+                        break;
+                    }
                 }
             }
 
-            if (!pageProps.TryGetProperty("design", out var design) || design.ValueKind != JsonValueKind.Object)
-                return null;
-
-            var dto = MapToDto(design);
-
-            // Enrich with detail-specific fields
-            if (design.TryGetProperty("description", out var desc) && desc.ValueKind == JsonValueKind.String)
+            // If exact match not found, use the first result as a fallback
+            if (matchingDesign == null)
             {
-                dto.Description = desc.GetString() ?? "";
-                dto.DescriptionHtml = dto.Description;
+                var enumerator = hits.EnumerateArray().GetEnumerator();
+                if (enumerator.MoveNext())
+                    matchingDesign = enumerator.Current;
+                else
+                    return null;
             }
 
-            // Extract all images from designExtension.design_pictures
+            var design = matchingDesign.Value;
+            var dto = MapToDto(design);
+
+            // Enrich with all images from designExtension.design_pictures
             if (design.TryGetProperty("designExtension", out var ext) && ext.ValueKind == JsonValueKind.Object
                 && ext.TryGetProperty("design_pictures", out var pics) && pics.ValueKind == JsonValueKind.Array)
             {
@@ -223,18 +210,10 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
     /// <summary>Fetch and parse JSON from a URL.</summary>
     private async Task<JsonDocument?> FetchJsonAsync(string url, CancellationToken ct)
     {
-        EnsureHeaders(BaseUrl + "/en/search/models");
-        
+        EnsureHeaders();
+
         _logger.LogDebug("MakerWorld: Fetching {Url}", url);
         var response = await _http.GetAsync(url, ct);
-
-        // If 404, the buildId may have changed (new deployment)
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            _logger.LogWarning("MakerWorld: Got 404 for {Url}, refreshing buildId...", url);
-            _buildId = null;
-            return null;
-        }
 
         if (response.StatusCode == HttpStatusCode.Forbidden)
         {
@@ -242,50 +221,14 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
             return null;
         }
 
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            _logger.LogWarning("MakerWorld: Got 404 for {Url}.", url);
+            return null;
+        }
+
         response.EnsureSuccessStatusCode();
         return await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
-    }
-
-    /// <summary>Get or refresh the Next.js buildId from the MakerWorld homepage.</summary>
-    private async Task<string?> GetBuildIdAsync(CancellationToken ct)
-    {
-        if (_buildId != null && DateTime.UtcNow - _buildIdFetchedAt < BuildIdTtl)
-            return _buildId;
-
-        await _buildIdLock.WaitAsync(ct);
-        try
-        {
-            if (_buildId != null && DateTime.UtcNow - _buildIdFetchedAt < BuildIdTtl)
-                return _buildId;
-
-            EnsureHeaders();
-            
-            _logger.LogInformation("MakerWorld: Fetching buildId from homepage...");
-            var html = await _http.GetStringAsync($"{BaseUrl}/en", ct);
-            _logger.LogInformation("MakerWorld: Got homepage HTML ({Length} chars)", html.Length);
-            
-            var match = BuildIdRegex().Match(html);
-            if (match.Success)
-            {
-                _buildId = match.Groups[1].Value;
-                _buildIdFetchedAt = DateTime.UtcNow;
-                _logger.LogInformation("MakerWorld: Fetched buildId = {BuildId}", _buildId);
-                return _buildId;
-            }
-
-            _logger.LogError("MakerWorld: Could not extract buildId from HTML. HTML snippet: {Snippet}", 
-                html.Length > 500 ? html[..500] : html);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "MakerWorld: Failed to fetch buildId");
-            return null;
-        }
-        finally
-        {
-            _buildIdLock.Release();
-        }
     }
 
     private static ModelDto MapToDto(JsonElement item)
@@ -357,7 +300,4 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
     }
 
     #endregion
-
-    [GeneratedRegex(@"""buildId""\s*:\s*""([^""]+)""")]
-    private static partial Regex BuildIdRegex();
 }
