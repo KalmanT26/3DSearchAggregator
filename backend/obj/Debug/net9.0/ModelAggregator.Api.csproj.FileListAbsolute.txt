@@ -60,3 +60,4 @@ C:\Users\KalmanT\OneDrive - ZF Friedrichshafen AG\Documents\My Web Sites\3DSearc
 C:\Users\KalmanT\OneDrive - ZF Friedrichshafen AG\Documents\My Web Sites\3DSearchAggregator\backend\obj\Debug\net9.0\ModelAggregator.Api.genruntimeconfig.cache
 C:\Users\KalmanT\OneDrive - ZF Friedrichshafen AG\Documents\My Web Sites\3DSearchAggregator\backend\obj\Debug\net9.0\ref\ModelAggregator.Api.dll
 C:\Users\KalmanT\OneDrive - ZF Friedrichshafen AG\Documents\My Web Sites\3DSearchAggregator\backend\bin\Debug\net9.0\HtmlAgilityPack.dll
+C:\Users\KalmanT\OneDrive - ZF Friedrichshafen AG\Documents\My Web Sites\3DSearchAggregator\backend\obj\Debug\net9.0\ModelAggregator.Api.sourcelink.json
