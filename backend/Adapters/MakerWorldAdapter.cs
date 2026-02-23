@@ -56,6 +56,21 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
 
         if (!_http.DefaultRequestHeaders.Contains("Sec-Ch-Ua"))
             _http.DefaultRequestHeaders.Add("Sec-Ch-Ua", "\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\"121\", \"Chromium\";v=\"121\"");
+            
+        if (!_http.DefaultRequestHeaders.Contains("Sec-Ch-Ua-Mobile"))
+            _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Mobile", "?0");
+
+        if (!_http.DefaultRequestHeaders.Contains("Sec-Ch-Ua-Platform"))
+            _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Platform", "\"Windows\"");
+
+        if (!_http.DefaultRequestHeaders.Contains("Sec-Fetch-Site"))
+            _http.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
+
+        if (!_http.DefaultRequestHeaders.Contains("Sec-Fetch-Mode"))
+            _http.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "cors");
+
+        if (!_http.DefaultRequestHeaders.Contains("Sec-Fetch-Dest"))
+            _http.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "empty");
     }
 
     public async Task<AdapterSearchResult> SearchAsync(string query, int page = 1, int pageSize = 20,
