@@ -1,6 +1,8 @@
 using System.Net;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using ModelAggregator.Api.DTOs;
 using ModelAggregator.Api.Models;
 
@@ -23,29 +25,37 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
     private static readonly TimeSpan BuildIdTtl = TimeSpan.FromHours(1);
     private static readonly SemaphoreSlim _buildIdLock = new(1, 1);
 
-    public MakerWorldAdapter(HttpClient _, ILogger<MakerWorldAdapter> logger)
+    private readonly HttpClient _http;
+
+    public MakerWorldAdapter(HttpClient http, ILogger<MakerWorldAdapter> logger)
     {
-        // We intentionally ignore the DI-supplied HttpClient as it gets blocked by Cloudflare.
+        // We use the DI client which is configured in Program.cs with proper decompression
+        _http = http;
         _logger = logger;
     }
 
     public ModelSource Source => ModelSource.MakerWorld;
 
-    /// <summary>Create a standalone HttpClient that bypasses Cloudflare.</summary>
-    private static HttpClient CreateBrowserClient()
+    /// <summary>Ensures the standard browser headers are present.</summary>
+    private void EnsureHeaders(string? referer = null)
     {
-        var handler = new HttpClientHandler
+        _http.DefaultRequestHeaders.Remove("User-Agent");
+        _http.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
+        
+        if (referer != null)
         {
-            AutomaticDecompression = DecompressionMethods.All,
-            AllowAutoRedirect = true
-        };
-        var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(20) };
-        client.DefaultRequestHeaders.Add("User-Agent",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-        client.DefaultRequestHeaders.Add("Accept",
-            "text/html,application/xhtml+xml,application/xml;q=0.9,application/json,*/*;q=0.8");
-        client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
-        return client;
+            _http.DefaultRequestHeaders.Referrer = new Uri(referer);
+        }
+        else
+        {
+            _http.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
+        }
+
+        if (!_http.DefaultRequestHeaders.Contains("Origin"))
+            _http.DefaultRequestHeaders.Add("Origin", BaseUrl);
+
+        if (!_http.DefaultRequestHeaders.Contains("Sec-Ch-Ua"))
+            _http.DefaultRequestHeaders.Add("Sec-Ch-Ua", "\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\"121\", \"Chromium\";v=\"121\"");
     }
 
     public async Task<AdapterSearchResult> SearchAsync(string query, int page = 1, int pageSize = 20,
@@ -195,13 +205,13 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
 
     #region Helpers
 
-    /// <summary>Fetch and parse JSON from a URL using a standalone browser-like HttpClient.</summary>
+    /// <summary>Fetch and parse JSON from a URL.</summary>
     private async Task<JsonDocument?> FetchJsonAsync(string url, CancellationToken ct)
     {
-        using var client = CreateBrowserClient();
+        EnsureHeaders(BaseUrl + "/en/search/models");
         
         _logger.LogDebug("MakerWorld: Fetching {Url}", url);
-        var response = await client.GetAsync(url, ct);
+        var response = await _http.GetAsync(url, ct);
 
         // If 404, the buildId may have changed (new deployment)
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -213,7 +223,7 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
 
         if (response.StatusCode == HttpStatusCode.Forbidden)
         {
-            _logger.LogWarning("MakerWorld: Got 403 (Cloudflare) for {Url}", url);
+            _logger.LogError("MakerWorld: Got 403 (Cloudflare) for {Url}. Blocked.", url);
             return null;
         }
 
@@ -233,10 +243,10 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
             if (_buildId != null && DateTime.UtcNow - _buildIdFetchedAt < BuildIdTtl)
                 return _buildId;
 
-            using var client = CreateBrowserClient();
+            EnsureHeaders();
             
             _logger.LogInformation("MakerWorld: Fetching buildId from homepage...");
-            var html = await client.GetStringAsync($"{BaseUrl}/en", ct);
+            var html = await _http.GetStringAsync($"{BaseUrl}/en", ct);
             _logger.LogInformation("MakerWorld: Got homepage HTML ({Length} chars)", html.Length);
             
             var match = BuildIdRegex().Match(html);
@@ -248,7 +258,8 @@ public partial class MakerWorldAdapter : IModelSourceAdapter
                 return _buildId;
             }
 
-            _logger.LogError("MakerWorld: Could not extract buildId from HTML");
+            _logger.LogError("MakerWorld: Could not extract buildId from HTML. HTML snippet: {Snippet}", 
+                html.Length > 500 ? html[..500] : html);
             return null;
         }
         catch (Exception ex)

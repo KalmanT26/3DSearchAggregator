@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ModelAggregator.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f56a0e242c4c86cf7b49ec13b5f42544e05f5bd1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d008aa522a6cecfc8bdda0e407438f2847f41270")]
 [assembly: System.Reflection.AssemblyProductAttribute("ModelAggregator.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ModelAggregator.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
