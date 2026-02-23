@@ -1,0 +1,219 @@
+2026-02-23 13:19:49.697 +01:00 [INF] Now listening on: http://localhost:5000
+2026-02-23 13:19:49.847 +01:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-02-23 13:19:49.849 +01:00 [INF] Hosting environment: Development
+2026-02-23 13:19:49.849 +01:00 [INF] Content root path: C:\Users\KalmanT\OneDrive - ZF Friedrichshafen AG\Documents\My Web Sites\3DSearchAggregator\backend
+2026-02-23 13:19:51.131 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/ - null null
+2026-02-23 13:19:51.279 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/ - 404 0 null 154.9826ms
+2026-02-23 13:19:51.385 +01:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5000/, Response status code: 404
+2026-02-23 13:20:49.276 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/models/search?q=vase&page=1&pageSize=24&sortBy=relevance - null null
+2026-02-23 13:20:49.276 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/models/trending?page=1&pageSize=24 - null null
+2026-02-23 13:20:49.347 +01:00 [INF] CORS policy execution successful.
+2026-02-23 13:20:49.348 +01:00 [INF] CORS policy execution successful.
+2026-02-23 13:20:49.351 +01:00 [INF] Executing endpoint 'ModelAggregator.Api.Controllers.ModelsController.GetTrending (ModelAggregator.Api)'
+2026-02-23 13:20:49.351 +01:00 [INF] Executing endpoint 'ModelAggregator.Api.Controllers.ModelsController.Search (ModelAggregator.Api)'
+2026-02-23 13:20:49.400 +01:00 [INF] Route matched with {action = "Search", controller = "Models"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[ModelAggregator.Api.DTOs.SearchResponse]] Search(System.String, Int32, Int32, System.String, System.String, System.Nullable`1[System.Boolean], System.Nullable`1[System.Decimal], System.Nullable`1[System.Decimal], System.Threading.CancellationToken) on controller ModelAggregator.Api.Controllers.ModelsController (ModelAggregator.Api).
+2026-02-23 13:20:49.400 +01:00 [INF] Route matched with {action = "GetTrending", controller = "Models"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[ModelAggregator.Api.DTOs.SearchResponse]] GetTrending(Int32, Int32, System.String, System.Threading.CancellationToken) on controller ModelAggregator.Api.Controllers.ModelsController (ModelAggregator.Api).
+2026-02-23 13:20:49.469 +01:00 [INF] Start processing HTTP request GET https://api.thingiverse.com/featured?*
+2026-02-23 13:20:49.469 +01:00 [INF] Start processing HTTP request GET https://api.thingiverse.com/search/vase?*
+2026-02-23 13:20:49.473 +01:00 [INF] Sending HTTP request GET https://api.thingiverse.com/featured?*
+2026-02-23 13:20:49.473 +01:00 [INF] Sending HTTP request GET https://api.thingiverse.com/search/vase?*
+2026-02-23 13:20:49.796 +01:00 [INF] Start processing HTTP request POST https://cults3d.com/graphql
+2026-02-23 13:20:49.796 +01:00 [INF] Start processing HTTP request POST https://cults3d.com/graphql
+2026-02-23 13:20:49.797 +01:00 [INF] Sending HTTP request POST https://cults3d.com/graphql
+2026-02-23 13:20:49.797 +01:00 [INF] Sending HTTP request POST https://cults3d.com/graphql
+2026-02-23 13:20:49.803 +01:00 [INF] Start processing HTTP request GET https://www.myminifactory.com/api/v2/search?*
+2026-02-23 13:20:49.803 +01:00 [INF] Start processing HTTP request GET https://www.myminifactory.com/api/v2/search?*
+2026-02-23 13:20:49.803 +01:00 [INF] Sending HTTP request GET https://www.myminifactory.com/api/v2/search?*
+2026-02-23 13:20:49.803 +01:00 [INF] Sending HTTP request GET https://www.myminifactory.com/api/v2/search?*
+2026-02-23 13:20:49.871 +01:00 [INF] Start processing HTTP request POST https://api.printables.com/graphql/
+2026-02-23 13:20:49.871 +01:00 [INF] Sending HTTP request POST https://api.printables.com/graphql/
+2026-02-23 13:20:49.882 +01:00 [INF] MakerWorld: Fetching buildId from homepage...
+2026-02-23 13:20:49.884 +01:00 [INF] Start processing HTTP request GET https://makerworld.com/en
+2026-02-23 13:20:49.884 +01:00 [INF] Sending HTTP request GET https://makerworld.com/en
+2026-02-23 13:20:49.937 +01:00 [INF] Start processing HTTP request POST https://api.printables.com/graphql/
+2026-02-23 13:20:49.937 +01:00 [INF] Sending HTTP request POST https://api.printables.com/graphql/
+2026-02-23 13:20:50.288 +01:00 [INF] Received HTTP response headers after 414.0987ms - 200
+2026-02-23 13:20:50.289 +01:00 [INF] End processing HTTP request after 418.0225ms - 200
+2026-02-23 13:20:50.331 +01:00 [INF] Printables: Found 8 trending results
+2026-02-23 13:20:50.332 +01:00 [INF] Trending: Source "Printables" returned 8 models.
+2026-02-23 13:20:50.336 +01:00 [INF] Received HTTP response headers after 398.655ms - 200
+2026-02-23 13:20:50.336 +01:00 [INF] End processing HTTP request after 399.6804ms - 200
+2026-02-23 13:20:50.355 +01:00 [INF] Printables: Found 24 results (total: 10000) for 'vase'
+2026-02-23 13:20:50.356 +01:00 [INF] Search: Source "Printables" returned 24 models. Total: 10000
+2026-02-23 13:20:50.560 +01:00 [INF] Received HTTP response headers after 1086.158ms - 200
+2026-02-23 13:20:50.560 +01:00 [INF] End processing HTTP request after 1095.2334ms - 200
+2026-02-23 13:20:50.575 +01:00 [INF] Thingiverse: Found 8 popular results
+2026-02-23 13:20:50.575 +01:00 [INF] Trending: Source "Thingiverse" returned 8 models.
+2026-02-23 13:20:50.623 +01:00 [INF] Received HTTP response headers after 819.2555ms - 200
+2026-02-23 13:20:50.623 +01:00 [INF] End processing HTTP request after 820.4288ms - 200
+2026-02-23 13:20:50.628 +01:00 [INF] Received HTTP response headers after 824.6298ms - 200
+2026-02-23 13:20:50.628 +01:00 [INF] End processing HTTP request after 825.5079ms - 200
+2026-02-23 13:20:50.762 +01:00 [INF] MyMiniFactory: Found 8 popular results
+2026-02-23 13:20:50.763 +01:00 [INF] Trending: Source "MyMiniFactory" returned 8 models.
+2026-02-23 13:20:50.773 +01:00 [INF] MyMiniFactory: Found 24 results (total: 3612)
+2026-02-23 13:20:50.773 +01:00 [INF] Search: Source "MyMiniFactory" returned 24 models. Total: 3612
+2026-02-23 13:20:50.848 +01:00 [INF] Received HTTP response headers after 1374.4962ms - 200
+2026-02-23 13:20:50.849 +01:00 [INF] End processing HTTP request after 1383.9354ms - 200
+2026-02-23 13:20:50.903 +01:00 [INF] Thingiverse: Found 24 results (total: 10000)
+2026-02-23 13:20:50.904 +01:00 [INF] Search: Source "Thingiverse" returned 24 models. Total: 10000
+2026-02-23 13:20:50.972 +01:00 [INF] Received HTTP response headers after 1087.7084ms - 200
+2026-02-23 13:20:50.973 +01:00 [INF] End processing HTTP request after 1089.1953ms - 200
+2026-02-23 13:20:51.179 +01:00 [INF] MakerWorld: Got homepage HTML (1029756 chars)
+2026-02-23 13:20:51.184 +01:00 [INF] MakerWorld: Fetched buildId = F56ZOfHH6xUATNzwkhAwH
+2026-02-23 13:20:51.184 +01:00 [INF] Received HTTP response headers after 1386.7564ms - 200
+2026-02-23 13:20:51.184 +01:00 [INF] End processing HTTP request after 1387.9385ms - 200
+2026-02-23 13:20:51.186 +01:00 [INF] Start processing HTTP request GET https://makerworld.com/_next/data/F56ZOfHH6xUATNzwkhAwH/en/search/models.json?*
+2026-02-23 13:20:51.186 +01:00 [INF] Start processing HTTP request GET https://makerworld.com/_next/data/F56ZOfHH6xUATNzwkhAwH/en/search/models.json?*
+2026-02-23 13:20:51.187 +01:00 [INF] Sending HTTP request GET https://makerworld.com/_next/data/F56ZOfHH6xUATNzwkhAwH/en/search/models.json?*
+2026-02-23 13:20:51.187 +01:00 [INF] Sending HTTP request GET https://makerworld.com/_next/data/F56ZOfHH6xUATNzwkhAwH/en/search/models.json?*
+2026-02-23 13:20:51.195 +01:00 [INF] Cults3D: Found 24 results (total: 48117)
+2026-02-23 13:20:51.195 +01:00 [INF] Search: Source "Cults3D" returned 24 models. Total: 48117
+2026-02-23 13:20:51.465 +01:00 [INF] Received HTTP response headers after 1667.5098ms - 200
+2026-02-23 13:20:51.465 +01:00 [INF] End processing HTTP request after 1668.6833ms - 200
+2026-02-23 13:20:51.487 +01:00 [INF] Cults3D: Found 8 trending results (total: 2983813)
+2026-02-23 13:20:51.487 +01:00 [INF] Trending: Source "Cults3D" returned 8 models.
+2026-02-23 13:20:51.894 +01:00 [INF] Received HTTP response headers after 707.4554ms - 200
+2026-02-23 13:20:51.895 +01:00 [INF] End processing HTTP request after 708.3759ms - 200
+2026-02-23 13:20:51.979 +01:00 [INF] MakerWorld: Found 20 trending results
+2026-02-23 13:20:51.979 +01:00 [INF] Trending: Source "MakerWorld" returned 20 models.
+2026-02-23 13:20:51.988 +01:00 [INF] Interleaving 52 items from 5 sources: Thingiverse(8), Cults3D(8), MyMiniFactory(8), Printables(8), MakerWorld(20)
+2026-02-23 13:20:52.004 +01:00 [INF] Executing OkObjectResult, writing value of type 'ModelAggregator.Api.DTOs.SearchResponse'.
+2026-02-23 13:20:52.067 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/models/trending?page=1&pageSize=24 - null null
+2026-02-23 13:20:52.067 +01:00 [INF] Executed action ModelAggregator.Api.Controllers.ModelsController.GetTrending (ModelAggregator.Api) in 2660.5994ms
+2026-02-23 13:20:52.068 +01:00 [INF] Executed endpoint 'ModelAggregator.Api.Controllers.ModelsController.GetTrending (ModelAggregator.Api)'
+2026-02-23 13:20:52.072 +01:00 [INF] CORS policy execution successful.
+2026-02-23 13:20:52.072 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/models/trending?page=1&pageSize=24 - 200 null application/json; charset=utf-8 2796.8114ms
+2026-02-23 13:20:52.073 +01:00 [INF] Executing endpoint 'ModelAggregator.Api.Controllers.ModelsController.GetTrending (ModelAggregator.Api)'
+2026-02-23 13:20:52.074 +01:00 [INF] Route matched with {action = "GetTrending", controller = "Models"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[ModelAggregator.Api.DTOs.SearchResponse]] GetTrending(Int32, Int32, System.String, System.Threading.CancellationToken) on controller ModelAggregator.Api.Controllers.ModelsController (ModelAggregator.Api).
+2026-02-23 13:20:52.085 +01:00 [INF] Start processing HTTP request GET https://api.thingiverse.com/featured?*
+2026-02-23 13:20:52.085 +01:00 [INF] Sending HTTP request GET https://api.thingiverse.com/featured?*
+2026-02-23 13:20:52.087 +01:00 [INF] Start processing HTTP request POST https://cults3d.com/graphql
+2026-02-23 13:20:52.087 +01:00 [INF] Sending HTTP request POST https://cults3d.com/graphql
+2026-02-23 13:20:52.089 +01:00 [INF] Start processing HTTP request GET https://www.myminifactory.com/api/v2/search?*
+2026-02-23 13:20:52.089 +01:00 [INF] Sending HTTP request GET https://www.myminifactory.com/api/v2/search?*
+2026-02-23 13:20:52.090 +01:00 [INF] Start processing HTTP request POST https://api.printables.com/graphql/
+2026-02-23 13:20:52.090 +01:00 [INF] Sending HTTP request POST https://api.printables.com/graphql/
+2026-02-23 13:20:52.091 +01:00 [INF] Start processing HTTP request GET https://makerworld.com/_next/data/F56ZOfHH6xUATNzwkhAwH/en/search/models.json?*
+2026-02-23 13:20:52.091 +01:00 [INF] Sending HTTP request GET https://makerworld.com/_next/data/F56ZOfHH6xUATNzwkhAwH/en/search/models.json?*
+2026-02-23 13:20:52.146 +01:00 [INF] Received HTTP response headers after 55.4831ms - 200
+2026-02-23 13:20:52.146 +01:00 [INF] End processing HTTP request after 56.155ms - 200
+2026-02-23 13:20:52.147 +01:00 [INF] Printables: Found 8 trending results
+2026-02-23 13:20:52.147 +01:00 [INF] Trending: Source "Printables" returned 8 models.
+2026-02-23 13:20:52.548 +01:00 [INF] Received HTTP response headers after 462.9057ms - 200
+2026-02-23 13:20:52.549 +01:00 [INF] End processing HTTP request after 463.9427ms - 200
+2026-02-23 13:20:52.552 +01:00 [INF] Thingiverse: Found 8 popular results
+2026-02-23 13:20:52.553 +01:00 [INF] Trending: Source "Thingiverse" returned 8 models.
+2026-02-23 13:20:52.612 +01:00 [INF] Received HTTP response headers after 1424.6613ms - 200
+2026-02-23 13:20:52.612 +01:00 [INF] End processing HTTP request after 1425.5625ms - 200
+2026-02-23 13:20:52.624 +01:00 [INF] Received HTTP response headers after 535.4898ms - 200
+2026-02-23 13:20:52.625 +01:00 [INF] End processing HTTP request after 536.2383ms - 200
+2026-02-23 13:20:52.661 +01:00 [INF] MyMiniFactory: Found 8 popular results
+2026-02-23 13:20:52.662 +01:00 [INF] Trending: Source "MyMiniFactory" returned 8 models.
+2026-02-23 13:20:52.717 +01:00 [INF] MakerWorld: Found 20 results (total: 3364) for 'vase'
+2026-02-23 13:20:52.717 +01:00 [INF] Search: Source "MakerWorld" returned 20 models. Total: 3364
+2026-02-23 13:20:52.717 +01:00 [INF] Interleaving 116 items from 5 sources: Thingiverse(24), Cults3D(24), MyMiniFactory(24), Printables(24), MakerWorld(20)
+2026-02-23 13:20:52.719 +01:00 [INF] Executing OkObjectResult, writing value of type 'ModelAggregator.Api.DTOs.SearchResponse'.
+2026-02-23 13:20:52.722 +01:00 [INF] Executed action ModelAggregator.Api.Controllers.ModelsController.Search (ModelAggregator.Api) in 3320.3044ms
+2026-02-23 13:20:52.722 +01:00 [INF] Executed endpoint 'ModelAggregator.Api.Controllers.ModelsController.Search (ModelAggregator.Api)'
+2026-02-23 13:20:52.723 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/models/search?q=vase&page=1&pageSize=24&sortBy=relevance - 200 null application/json; charset=utf-8 3447.4097ms
+2026-02-23 13:20:52.724 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/models/search?q=vase&page=1&pageSize=24&sortBy=relevance - null null
+2026-02-23 13:20:52.725 +01:00 [INF] CORS policy execution successful.
+2026-02-23 13:20:52.725 +01:00 [INF] Executing endpoint 'ModelAggregator.Api.Controllers.ModelsController.Search (ModelAggregator.Api)'
+2026-02-23 13:20:52.726 +01:00 [INF] Route matched with {action = "Search", controller = "Models"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[ModelAggregator.Api.DTOs.SearchResponse]] Search(System.String, Int32, Int32, System.String, System.String, System.Nullable`1[System.Boolean], System.Nullable`1[System.Decimal], System.Nullable`1[System.Decimal], System.Threading.CancellationToken) on controller ModelAggregator.Api.Controllers.ModelsController (ModelAggregator.Api).
+2026-02-23 13:20:52.727 +01:00 [INF] Start processing HTTP request GET https://api.thingiverse.com/search/vase?*
+2026-02-23 13:20:52.727 +01:00 [INF] Sending HTTP request GET https://api.thingiverse.com/search/vase?*
+2026-02-23 13:20:52.729 +01:00 [INF] Start processing HTTP request POST https://cults3d.com/graphql
+2026-02-23 13:20:52.729 +01:00 [INF] Sending HTTP request POST https://cults3d.com/graphql
+2026-02-23 13:20:52.730 +01:00 [INF] Start processing HTTP request GET https://www.myminifactory.com/api/v2/search?*
+2026-02-23 13:20:52.730 +01:00 [INF] Sending HTTP request GET https://www.myminifactory.com/api/v2/search?*
+2026-02-23 13:20:52.732 +01:00 [INF] Start processing HTTP request POST https://api.printables.com/graphql/
+2026-02-23 13:20:52.732 +01:00 [INF] Sending HTTP request POST https://api.printables.com/graphql/
+2026-02-23 13:20:52.733 +01:00 [INF] Start processing HTTP request GET https://makerworld.com/_next/data/F56ZOfHH6xUATNzwkhAwH/en/search/models.json?*
+2026-02-23 13:20:52.733 +01:00 [INF] Sending HTTP request GET https://makerworld.com/_next/data/F56ZOfHH6xUATNzwkhAwH/en/search/models.json?*
+2026-02-23 13:20:52.977 +01:00 [INF] Received HTTP response headers after 245.2929ms - 200
+2026-02-23 13:20:52.978 +01:00 [INF] End processing HTTP request after 246.3129ms - 200
+2026-02-23 13:20:53.021 +01:00 [INF] Printables: Found 24 results (total: 10000) for 'vase'
+2026-02-23 13:20:53.021 +01:00 [INF] Search: Source "Printables" returned 24 models. Total: 10000
+2026-02-23 13:20:53.089 +01:00 [INF] Received HTTP response headers after 1001.2938ms - 200
+2026-02-23 13:20:53.090 +01:00 [INF] End processing HTTP request after 1002.8517ms - 200
+2026-02-23 13:20:53.103 +01:00 [INF] Cults3D: Found 8 trending results (total: 2983813)
+2026-02-23 13:20:53.104 +01:00 [INF] Trending: Source "Cults3D" returned 8 models.
+2026-02-23 13:20:53.221 +01:00 [INF] Received HTTP response headers after 490.2718ms - 200
+2026-02-23 13:20:53.222 +01:00 [INF] End processing HTTP request after 491.7117ms - 200
+2026-02-23 13:20:53.306 +01:00 [INF] MyMiniFactory: Found 24 results (total: 3612)
+2026-02-23 13:20:53.306 +01:00 [INF] Search: Source "MyMiniFactory" returned 24 models. Total: 3612
+2026-02-23 13:20:53.344 +01:00 [INF] Received HTTP response headers after 1252.2609ms - 200
+2026-02-23 13:20:53.344 +01:00 [INF] End processing HTTP request after 1252.994ms - 200
+2026-02-23 13:20:53.466 +01:00 [INF] Received HTTP response headers after 738.5099ms - 200
+2026-02-23 13:20:53.466 +01:00 [INF] End processing HTTP request after 739.2785ms - 200
+2026-02-23 13:20:53.484 +01:00 [INF] MakerWorld: Found 20 trending results
+2026-02-23 13:20:53.485 +01:00 [INF] Trending: Source "MakerWorld" returned 20 models.
+2026-02-23 13:20:53.485 +01:00 [INF] Interleaving 52 items from 5 sources: Thingiverse(8), Cults3D(8), MyMiniFactory(8), Printables(8), MakerWorld(20)
+2026-02-23 13:20:53.485 +01:00 [INF] Executing OkObjectResult, writing value of type 'ModelAggregator.Api.DTOs.SearchResponse'.
+2026-02-23 13:20:53.492 +01:00 [INF] Executed action ModelAggregator.Api.Controllers.ModelsController.GetTrending (ModelAggregator.Api) in 1417.6879ms
+2026-02-23 13:20:53.492 +01:00 [INF] Executed endpoint 'ModelAggregator.Api.Controllers.ModelsController.GetTrending (ModelAggregator.Api)'
+2026-02-23 13:20:53.492 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/models/trending?page=1&pageSize=24 - 200 null application/json; charset=utf-8 1425.6582ms
+2026-02-23 13:20:53.502 +01:00 [INF] Thingiverse: Found 24 results (total: 10000)
+2026-02-23 13:20:53.503 +01:00 [INF] Search: Source "Thingiverse" returned 24 models. Total: 10000
+2026-02-23 13:20:53.727 +01:00 [INF] Received HTTP response headers after 997.8634ms - 200
+2026-02-23 13:20:53.727 +01:00 [INF] End processing HTTP request after 998.6269ms - 200
+2026-02-23 13:20:53.729 +01:00 [INF] Cults3D: Found 24 results (total: 48117)
+2026-02-23 13:20:53.730 +01:00 [INF] Search: Source "Cults3D" returned 24 models. Total: 48117
+2026-02-23 13:20:53.770 +01:00 [INF] Received HTTP response headers after 1036.4759ms - 200
+2026-02-23 13:20:53.770 +01:00 [INF] End processing HTTP request after 1037.5139ms - 200
+2026-02-23 13:20:54.128 +01:00 [INF] MakerWorld: Found 20 results (total: 3364) for 'vase'
+2026-02-23 13:20:54.128 +01:00 [INF] Search: Source "MakerWorld" returned 20 models. Total: 3364
+2026-02-23 13:20:54.136 +01:00 [INF] Interleaving 116 items from 5 sources: Thingiverse(24), Cults3D(24), MyMiniFactory(24), Printables(24), MakerWorld(20)
+2026-02-23 13:20:54.137 +01:00 [INF] Executing OkObjectResult, writing value of type 'ModelAggregator.Api.DTOs.SearchResponse'.
+2026-02-23 13:20:54.140 +01:00 [INF] Executed action ModelAggregator.Api.Controllers.ModelsController.Search (ModelAggregator.Api) in 1413.5614ms
+2026-02-23 13:20:54.140 +01:00 [INF] Executed endpoint 'ModelAggregator.Api.Controllers.ModelsController.Search (ModelAggregator.Api)'
+2026-02-23 13:20:54.142 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/models/search?q=vase&page=1&pageSize=24&sortBy=relevance - 200 null application/json; charset=utf-8 1417.6131ms
+2026-02-23 13:26:42.928 +01:00 [INF] Now listening on: http://localhost:5000
+2026-02-23 13:26:43.030 +01:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-02-23 13:26:43.034 +01:00 [INF] Hosting environment: Development
+2026-02-23 13:26:43.037 +01:00 [INF] Content root path: C:\Users\KalmanT\OneDrive - ZF Friedrichshafen AG\Documents\My Web Sites\3DSearchAggregator\backend
+2026-02-23 13:27:07.873 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/models/search?q=cat&source=MakerWorld - null null
+2026-02-23 13:27:07.914 +01:00 [INF] Executing endpoint 'ModelAggregator.Api.Controllers.ModelsController.Search (ModelAggregator.Api)'
+2026-02-23 13:27:07.950 +01:00 [INF] Route matched with {action = "Search", controller = "Models"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[ModelAggregator.Api.DTOs.SearchResponse]] Search(System.String, Int32, Int32, System.String, System.String, System.Nullable`1[System.Boolean], System.Nullable`1[System.Decimal], System.Nullable`1[System.Decimal], System.Threading.CancellationToken) on controller ModelAggregator.Api.Controllers.ModelsController (ModelAggregator.Api).
+2026-02-23 13:27:07.998 +01:00 [INF] Start processing HTTP request GET https://api.thingiverse.com/search/cat?*
+2026-02-23 13:27:08.004 +01:00 [INF] Sending HTTP request GET https://api.thingiverse.com/search/cat?*
+2026-02-23 13:27:08.204 +01:00 [INF] Start processing HTTP request POST https://cults3d.com/graphql
+2026-02-23 13:27:08.206 +01:00 [INF] Sending HTTP request POST https://cults3d.com/graphql
+2026-02-23 13:27:08.213 +01:00 [INF] Start processing HTTP request GET https://www.myminifactory.com/api/v2/search?*
+2026-02-23 13:27:08.216 +01:00 [INF] Sending HTTP request GET https://www.myminifactory.com/api/v2/search?*
+2026-02-23 13:27:08.253 +01:00 [INF] Start processing HTTP request POST https://api.printables.com/graphql/
+2026-02-23 13:27:08.256 +01:00 [INF] Sending HTTP request POST https://api.printables.com/graphql/
+2026-02-23 13:27:08.266 +01:00 [INF] MakerWorld: Fetching buildId from homepage...
+2026-02-23 13:27:08.269 +01:00 [INF] Start processing HTTP request GET https://makerworld.com/en
+2026-02-23 13:27:08.272 +01:00 [INF] Sending HTTP request GET https://makerworld.com/en
+2026-02-23 13:27:08.753 +01:00 [INF] Received HTTP response headers after 472.7365ms - 200
+2026-02-23 13:27:08.767 +01:00 [INF] End processing HTTP request after 498.1647ms - 200
+2026-02-23 13:27:08.861 +01:00 [INF] MakerWorld: Got homepage HTML (1027132 chars)
+2026-02-23 13:27:08.866 +01:00 [INF] MakerWorld: Fetched buildId = F56ZOfHH6xUATNzwkhAwH
+2026-02-23 13:27:08.869 +01:00 [INF] Received HTTP response headers after 609.6528ms - 200
+2026-02-23 13:27:08.869 +01:00 [INF] Start processing HTTP request GET https://makerworld.com/_next/data/F56ZOfHH6xUATNzwkhAwH/en/search/models.json?*
+2026-02-23 13:27:08.871 +01:00 [INF] End processing HTTP request after 617.8039ms - 200
+2026-02-23 13:27:08.873 +01:00 [INF] Sending HTTP request GET https://makerworld.com/_next/data/F56ZOfHH6xUATNzwkhAwH/en/search/models.json?*
+2026-02-23 13:27:08.922 +01:00 [INF] Printables: Found 24 results (total: 10000) for 'cat'
+2026-02-23 13:27:08.926 +01:00 [INF] Search: Source "Printables" returned 24 models. Total: 10000
+2026-02-23 13:27:09.121 +01:00 [INF] Received HTTP response headers after 912.3997ms - 200
+2026-02-23 13:27:09.125 +01:00 [INF] End processing HTTP request after 921.2581ms - 200
+2026-02-23 13:27:09.134 +01:00 [INF] Cults3D: Found 24 results (total: 45937)
+2026-02-23 13:27:09.137 +01:00 [INF] Search: Source "Cults3D" returned 24 models. Total: 45937
+2026-02-23 13:27:09.212 +01:00 [INF] Received HTTP response headers after 1206.1141ms - 200
+2026-02-23 13:27:09.215 +01:00 [INF] End processing HTTP request after 1221.4641ms - 200
+2026-02-23 13:27:09.243 +01:00 [INF] Thingiverse: Found 24 results (total: 10000)
+2026-02-23 13:27:09.246 +01:00 [INF] Search: Source "Thingiverse" returned 24 models. Total: 10000
+2026-02-23 13:27:10.239 +01:00 [INF] Received HTTP response headers after 1362.0998ms - 200
+2026-02-23 13:27:10.242 +01:00 [INF] End processing HTTP request after 1372.5663ms - 200
+2026-02-23 13:27:10.312 +01:00 [INF] MakerWorld: Found 20 results (total: 3913) for 'cat'
+2026-02-23 13:27:10.315 +01:00 [INF] Search: Source "MakerWorld" returned 20 models. Total: 3913
+2026-02-23 13:27:10.379 +01:00 [INF] Received HTTP response headers after 2160.464ms - 200
+2026-02-23 13:27:10.382 +01:00 [INF] End processing HTTP request after 2168.7834ms - 200
+2026-02-23 13:27:10.456 +01:00 [INF] MyMiniFactory: Found 23 results (total: 5467)
+2026-02-23 13:27:10.460 +01:00 [INF] Search: Source "MyMiniFactory" returned 23 models. Total: 5467
+2026-02-23 13:27:10.472 +01:00 [INF] Interleaving 115 items from 5 sources: Thingiverse(24), Cults3D(24), MyMiniFactory(23), Printables(24), MakerWorld(20)
+2026-02-23 13:27:10.483 +01:00 [INF] Executing OkObjectResult, writing value of type 'ModelAggregator.Api.DTOs.SearchResponse'.
+2026-02-23 13:27:10.528 +01:00 [INF] Executed action ModelAggregator.Api.Controllers.ModelsController.Search (ModelAggregator.Api) in 2567.2676ms
+2026-02-23 13:27:10.532 +01:00 [INF] Executed endpoint 'ModelAggregator.Api.Controllers.ModelsController.Search (ModelAggregator.Api)'
+2026-02-23 13:27:10.539 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/models/search?q=cat&source=MakerWorld - 200 null application/json; charset=utf-8 2667.6316ms
