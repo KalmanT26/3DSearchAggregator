@@ -39,6 +39,7 @@ export default function SearchPage() {
     const [error, setError] = useState<string | null>(null);
     const [selectedModel, setSelectedModel] = useState<ModelDto | null>(null);
     const [showFilters, setShowFilters] = useState(true);
+    const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
     const isSearchActive = query.trim().length > 0;
 
@@ -192,17 +193,33 @@ export default function SearchPage() {
                     <button type="submit" className="search-bar__submit">
                         Search
                     </button>
-                    <button type="button" className="search-bar__random" onClick={handleRandom} title="Surprise Me!">
-                        🎲
-                    </button>
+                    <div className="search-bar__actions">
+                        <button type="button" className="search-bar__random" onClick={handleRandom} title="Surprise Me!">
+                            🎲
+                        </button>
+                        <button type="button" className="search-bar__filter-mobile" onClick={() => setIsMobileFilterOpen(true)} title="Filters">
+                            ⚙️ Filters
+                        </button>
+                    </div>
                 </form>
             </header>
 
             <div className="search-layout">
+                {/* Mobile Filter Overlay */}
+                <div 
+                    className={`search-sidebar-overlay ${isMobileFilterOpen ? 'open' : ''}`} 
+                    onClick={() => setIsMobileFilterOpen(false)}
+                ></div>
+
                 {/* Sidebar */}
-                <aside className={`search-sidebar ${showFilters ? '' : 'collapsed'}`}>
+                <aside className={`search-sidebar ${showFilters ? '' : 'collapsed'} ${isMobileFilterOpen ? 'mobile-open' : ''}`}>
+                    <div className="search-sidebar__mobile-header">
+                        <h2>Filters</h2>
+                        <button className="search-sidebar__close" onClick={() => setIsMobileFilterOpen(false)}>✕</button>
+                    </div>
+
                     <button
-                        className="sidebar-toggle"
+                        className="sidebar-toggle desktop-only"
                         onClick={() => setShowFilters(!showFilters)}
                     >
                         {showFilters ? '◀ Filters' : '▶'}

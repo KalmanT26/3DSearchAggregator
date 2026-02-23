@@ -314,3 +314,40 @@
     50% { opacity: 1; }
     100% { opacity: 0.6; }
 }
+
+@media (max-width: 768px) {
+    .detail-panel {
+        width: 100vw;
+        max-width: 100vw;
+        height: 100dvh;
+        border-left: none;
+    }
+
+    .detail-close {
+        top: 12px;
+        left: calc(100% - 48px);
+    }
+
+    .detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .detail-price {
+        align-self: flex-start;
+    }
+
+    .detail-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-info {
+        padding: 16px;
+    }
+
+    .detail-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
