@@ -1,4 +1,10 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
 using ModelAggregator.Api.Adapters;
+using ModelAggregator.Api.Data;
 using ModelAggregator.Api.Services;
 using Scalar.AspNetCore;
 using Serilog;
@@ -11,6 +17,30 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 builder.Host.UseSerilog();
+
+// --- Database ---
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// --- Password Hashing ---
+builder.Services.AddScoped<IPasswordHasher<ModelAggregator.Api.Data.Entities.User>, PasswordHasher<ModelAggregator.Api.Data.Entities.User>>();
+
+// --- Authentication (JWT) ---
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddScoped<AuthService>();
 
 // --- Source Adapters (extensible: just add more registrations) ---
 // Note: We add a standard User-Agent because some APIs (like Printables) require it.
@@ -28,10 +58,6 @@ builder.Services.AddHttpClient<Cults3DAdapter>(client =>
 
 builder.Services.AddHttpClient<MyMiniFactoryAdapter>(client => 
 {
-    // MMF Adapter sets its own, but we can set a fallback here or let it override.
-    // The adapter code does: _http.DefaultRequestHeaders.Add("User-Agent", "3DSearchAggregator/1.0");
-    // We'll leave it to the adapter to set its specific one if needed, or we can unify.
-    // For now, let's just register it securely.
     client.DefaultRequestHeaders.Add("User-Agent", userAgent); 
 });
 
@@ -62,14 +88,17 @@ builder.Services.AddScoped<IRandomSearchService, RandomSearchService>();
 builder.Services.AddScoped<SearchService>();
 
 // --- CORS (allow React frontend) ---
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? new[] { "http://localhost:5173" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        // Allow any origin for testing/deployment flexibility
-        policy.AllowAnyOrigin() 
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -77,6 +106,13 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+// --- Auto-apply migrations on startup ---
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
 
 // --- Middleware ---
 if (app.Environment.IsDevelopment())
@@ -86,6 +122,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 try

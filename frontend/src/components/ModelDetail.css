@@ -244,6 +244,9 @@
 
 .detail-actions {
     padding-top: 8px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .detail-btn {
@@ -267,6 +270,19 @@
 
 .detail-btn.primary:hover {
     box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+}
+
+.detail-btn.secondary {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    font-family: var(--font-sans);
+}
+
+.detail-btn.secondary:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
     transform: translateY(-1px);
 }
 

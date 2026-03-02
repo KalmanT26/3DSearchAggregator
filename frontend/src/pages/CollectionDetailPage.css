@@ -1,0 +1,164 @@
+.coldetail-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.coldetail-main {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.coldetail-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.coldetail-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.coldetail-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.coldetail-desc {
+    color: var(--text-secondary);
+    margin-top: 0.3rem;
+    font-size: 0.95rem;
+}
+
+.coldetail-meta {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.coldetail-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 400px;
+}
+
+.coldetail-edit-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-cancel {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* Grid */
+.coldetail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.coldetail-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.coldetail-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+}
+
+.coldetail-card__img {
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--bg-tertiary);
+}
+
+.coldetail-card__img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.coldetail-card:hover .coldetail-card__img img {
+    transform: scale(1.05);
+}
+
+.coldetail-card__body {
+    padding: 0.75rem;
+}
+
+.coldetail-card__source {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.4rem;
+}
+
+.coldetail-card__title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.coldetail-card__actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coldetail-card__link {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: 0.8rem;
+}
+
+.coldetail-card__link:hover {
+    text-decoration: underline;
+}
+
+.coldetail-card__remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    padding: 0.2rem;
+}
+
+.coldetail-card:hover .coldetail-card__remove {
+    opacity: 0.6;
+}
+
+.coldetail-card__remove:hover {
+    opacity: 1 !important;
+}

@@ -1,0 +1,30 @@
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Jj]unk/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Environment files
+.env
+.env.*
+
+# Application settings (uncomment if you don't want to track any settings)
+# appsettings.json
+appsettings.Development.json

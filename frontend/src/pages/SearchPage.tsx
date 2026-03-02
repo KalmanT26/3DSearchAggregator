@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { searchModels, getTrending, getRandomTerm } from '../api';
 import type { SearchParams, SearchResponse, ModelDto } from '../api';
 import { SOURCE_COLORS, SOURCE_ICONS } from '../sourceConfig';
+import { useAuth } from '../contexts/AuthContext';
 import ModelCard from '../components/ModelCard';
 import ModelDetail from '../components/ModelDetail';
 import Logo from '../components/Logo';
@@ -20,6 +21,7 @@ const SORT_OPTIONS = [
 const SOURCES = ['Thingiverse', 'Cults3D', 'MyMiniFactory', 'Printables', 'MakerWorld'];
 
 export default function SearchPage() {
+    const { user, logout } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     
     // Derived state from URL
@@ -164,9 +166,8 @@ export default function SearchPage() {
             {/* Header */}
             <header className="search-header">
                 <Link to="/" className="search-header__brand">
-                    <Logo size={32} />
+                    <Logo size={28} />
                     <h1 className="search-header__title">ModelVault</h1>
-                    <span className="search-header__tagline">3D Model Search Aggregator</span>
                 </Link>
 
                 <form className="search-bar" onSubmit={handleSearch}>
@@ -175,7 +176,7 @@ export default function SearchPage() {
                         <input
                             type="text"
                             className="search-bar__input"
-                            placeholder="Search 3D models across all platforms..."
+                            placeholder="Search 3D models..."
                             value={searchInput}
                             onChange={(e) => setSearchInput(e.target.value)}
                             id="main-search"
@@ -193,15 +194,33 @@ export default function SearchPage() {
                     <button type="submit" className="search-bar__submit">
                         Search
                     </button>
-                    <div className="search-bar__actions">
-                        <button type="button" className="search-bar__random" onClick={handleRandom} title="Surprise Me!">
-                            🎲
-                        </button>
-                        <button type="button" className="search-bar__filter-mobile" onClick={() => setIsMobileFilterOpen(true)} title="Filters">
-                            ⚙️ Filters
-                        </button>
-                    </div>
                 </form>
+
+                <div className="search-header__actions">
+                    <button type="button" className="search-header__icon-btn" onClick={handleRandom} title="Surprise Me!">
+                        🎲
+                    </button>
+                    <button type="button" className="search-header__icon-btn search-header__filter-mobile" onClick={() => setIsMobileFilterOpen(true)} title="Filters">
+                        ⚙️
+                    </button>
+                    {user ? (
+                        <>
+                            <Link to="/collections" className="search-header__icon-btn" title="My Collections">
+                                📁
+                            </Link>
+                            {user.avatarUrl && (
+                                <img src={user.avatarUrl} alt="" className="search-header__avatar" />
+                            )}
+                            <button className="search-header__logout" onClick={logout} title="Sign Out">
+                                Sign Out
+                            </button>
+                        </>
+                    ) : (
+                        <Link to="/login" className="search-header__login-btn">
+                            Sign In
+                        </Link>
+                    )}
+                </div>
             </header>
 
             <div className="search-layout">
