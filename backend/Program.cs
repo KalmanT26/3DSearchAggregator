@@ -88,8 +88,24 @@ builder.Services.AddScoped<IRandomSearchService, RandomSearchService>();
 builder.Services.AddScoped<SearchService>();
 
 // --- CORS (allow React frontend) ---
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? new[] { "http://localhost:5173" };
+// Collect origins from appsettings.json
+var configOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? Array.Empty<string>();
+
+// Also support a simple comma-separated CORS_ORIGINS env var (easiest to set on Render)
+var envOrigins = Environment.GetEnvironmentVariable("CORS_ORIGINS")
+    ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    ?? Array.Empty<string>();
+
+// Merge all origins, always include localhost for dev
+var allowedOrigins = configOrigins
+    .Concat(envOrigins)
+    .Concat(new[] { "http://localhost:5173" })
+    .Select(o => o.TrimEnd('/'))   // normalize: strip trailing slashes
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
+
+Log.Information("CORS allowed origins: {Origins}", string.Join(", ", allowedOrigins));
 
 builder.Services.AddCors(options =>
 {
