@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using ModelAggregator.Api.DTOs;
@@ -32,28 +33,29 @@ public class MakerWorldAdapter : IModelSourceAdapter
     {
         _http.DefaultRequestHeaders.Clear();
 
-        // Use a very recent Chrome User-Agent
+        // Use a mobile User-Agent (often less strictly challenged)
         _http.DefaultRequestHeaders.Add("User-Agent",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36");
+            "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Mobile Safari/537.36");
 
         _http.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
         _http.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
-        _http.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br, zstd");
         
         _http.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
 
         _http.DefaultRequestHeaders.Add("Origin", BaseUrl);
-        _http.DefaultRequestHeaders.Add("Connection", "keep-alive");
-        _http.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
 
         _http.DefaultRequestHeaders.Add("Sec-Ch-Ua",
             "\"Not(A:Brand\";v=\"99\", \"Google Chrome\";v=\"133\", \"Chromium\";v=\"133\"");
-        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Mobile", "?0");
-        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Platform", "\"Windows\"");
+        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Mobile", "?1");
+        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Platform", "\"Android\"");
         
         _http.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
         _http.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "cors");
         _http.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "empty");
+        
+        // Add additional browser headers
+        _http.DefaultRequestHeaders.Add("Priority", "u=1, i");
+        _http.DefaultRequestHeaders.Add("DNT", "1");
     }
 
     public async Task<AdapterSearchResult> SearchAsync(string query, int page = 1, int pageSize = 20,
@@ -219,7 +221,14 @@ public class MakerWorldAdapter : IModelSourceAdapter
         EnsureHeaders();
 
         _logger.LogDebug("MakerWorld: Fetching {Url}", url);
-        var response = await _http.GetAsync(url, ct);
+        
+        var request = new HttpRequestMessage(HttpMethod.Get, url)
+        {
+            Version = new Version(2, 0),
+            VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher
+        };
+
+        var response = await _http.SendAsync(request, ct);
 
         if (response.StatusCode == HttpStatusCode.Forbidden)
         {
