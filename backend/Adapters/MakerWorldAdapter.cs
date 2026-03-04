@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Linq;
 using Microsoft.Extensions.Logging;
+using Microsoft.Playwright;
 using ModelAggregator.Api.DTOs;
 using ModelAggregator.Api.Models;
 
@@ -19,6 +21,10 @@ public class MakerWorldAdapter : IModelSourceAdapter
     private const string BaseUrl = "https://makerworld.com";
     private const string SearchApiUrl = $"{BaseUrl}/api/v1/search-service/select/design2";
     private const string SiteBaseUrl = "https://makerworld.com/en/models/";
+    
+    // Store Cloudflare clearance cookies globally for the app lifetime
+    private static IReadOnlyList<Microsoft.Playwright.BrowserContextCookiesResult>? _clearanceCookies = null;
+    private static readonly SemaphoreSlim _playwrightLock = new(1, 1);
 
     public MakerWorldAdapter(HttpClient http, ILogger<MakerWorldAdapter> logger)
     {
@@ -60,6 +66,13 @@ public class MakerWorldAdapter : IModelSourceAdapter
         _http.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
         _http.DefaultRequestHeaders.Add("Priority", "u=1, i");
         _http.DefaultRequestHeaders.Add("DNT", "1");
+
+        // Attach Cloudflare clearance cookies if we have them
+        if (_clearanceCookies != null && _clearanceCookies.Any())
+        {
+            var cookieString = string.Join("; ", _clearanceCookies.Select(c => $"{c.Name}={c.Value}"));
+            _http.DefaultRequestHeaders.Add("Cookie", cookieString);
+        }
     }
 
     public async Task<AdapterSearchResult> SearchAsync(string query, int page = 1, int pageSize = 20,
@@ -234,12 +247,38 @@ public class MakerWorldAdapter : IModelSourceAdapter
 
         var response = await _http.SendAsync(request, ct);
 
-        if (response.StatusCode == HttpStatusCode.Forbidden)
+        if (response.StatusCode == HttpStatusCode.Forbidden || response.StatusCode == HttpStatusCode.ServiceUnavailable)
         {
             var body = await response.Content.ReadAsStringAsync(ct);
             var snippet = body.Length > 300 ? body[..300] : body;
-            _logger.LogError("MakerWorld: Got 403 for {Url}. Response snippet: {Snippet}", url, snippet);
-            return null;
+            _logger.LogWarning("MakerWorld: Got {StatusCode} for {Url}. Likely Cloudflare JS challenge. Snippet: {Snippet}", response.StatusCode, url, snippet);
+            
+            // Try to bypass Cloudflare using Playwright
+            var bypassed = await GetCloudflareClearanceAsync(ct);
+            if (bypassed)
+            {
+                _logger.LogInformation("MakerWorld: Successfully got clearance cookies. Retrying request...");
+                
+                // Re-ensure headers to attach the new cookies
+                EnsureHeaders();
+                var retryRequest = new HttpRequestMessage(HttpMethod.Get, url)
+                {
+                    Version = new Version(2, 0),
+                    VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher
+                };
+                response = await _http.SendAsync(retryRequest, ct);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("MakerWorld: Retry after Playwright clearance failed with {StatusCode}.", response.StatusCode);
+                    return null;
+                }
+            }
+            else
+            {
+                _logger.LogError("MakerWorld: Playwright bypass failed. Could not get clearance.");
+                return null;
+            }
         }
 
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -318,6 +357,83 @@ public class MakerWorldAdapter : IModelSourceAdapter
                 ? (DateTime.TryParse(ct2.GetString(), out var d) ? d : DateTime.UtcNow)
                 : DateTime.UtcNow,
         };
+    }
+
+    private async Task<bool> GetCloudflareClearanceAsync(CancellationToken ct)
+    {
+        await _playwrightLock.WaitAsync(ct);
+        try
+        {
+            // If already set by another thread while we were waiting, no need to run again
+            if (_clearanceCookies != null && _clearanceCookies.Any(c => c.Name == "cf_clearance"))
+            {
+                return true;
+            }
+
+            _logger.LogInformation("MakerWorld: Initializing Playwright to bypass Cloudflare...");
+            
+            // Disable TLS cert validation since company proxy intercepts it
+            Environment.SetEnvironmentVariable("NODE_TLS_REJECT_UNAUTHORIZED", "0");
+            
+            using var playwright = await Playwright.CreateAsync();
+            
+            await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+            {
+                Headless = true,
+                Args = [ "--ignore-certificate-errors" ] // Important for proxy environments
+            });
+
+            var context = await browser.NewContextAsync(new BrowserNewContextOptions
+            {
+                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+                ViewportSize = new ViewportSize { Width = 1920, Height = 1080 },
+                DeviceScaleFactor = 1,
+                IsMobile = false,
+                HasTouch = false,
+                Locale = "en-US",
+                TimezoneId = "America/New_York",
+                ExtraHTTPHeaders = new Dictionary<string, string>
+                {
+                    { "sec-ch-ua", "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"" },
+                    { "sec-ch-ua-mobile", "?0" },
+                    { "sec-ch-ua-platform", "\"Windows\"" }
+                }
+            });
+
+            var page = await context.NewPageAsync();
+            
+            // Try to navigate to home page which should trigger the JS challenge
+            _logger.LogInformation("MakerWorld: Navigating to home page for JS challenge...");
+            await page.GotoAsync(BaseUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle, Timeout = 30000 });
+            
+            // Wait up to 15 seconds to pass the Cloudflare challenge and reach the real app
+            // We know we are past CF when __NEXT_DATA__ or main app elements appear
+            try
+            {
+                await page.WaitForSelectorAsync("script#__NEXT_DATA__", new PageWaitForSelectorOptions { Timeout = 15000 });
+                _logger.LogInformation("MakerWorld: Passed JS challenge successfully under 15s.");
+            }
+            catch (TimeoutException)
+            {
+                _logger.LogWarning("MakerWorld: Timed out waiting for app element. Cookies might still be valid though.");
+            }
+            
+            // Dump cookies
+            var pwCookies = await context.CookiesAsync([BaseUrl]);
+            _clearanceCookies = [.. pwCookies];
+            
+            _logger.LogInformation("MakerWorld: Extracted {Count} cookies from Playwright.", _clearanceCookies.Count);
+            return _clearanceCookies.Any(c => c.Name == "cf_clearance");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "MakerWorld: Playwright clearance failed.");
+            return false;
+        }
+        finally
+        {
+            _playwrightLock.Release();
+        }
     }
 
     #endregion
