@@ -10,6 +10,14 @@ namespace ModelAggregator.Api.Services;
 public class SearchService(IEnumerable<IModelSourceAdapter> adapters, ILogger<SearchService> logger)
 {
     /// <summary>
+    /// Returns true when the user picked a sort that requires a single, unified ordering
+    /// across all sources (likes, newest, price). "relevance" is excluded because each
+    /// source defines relevance differently and we interleave those results instead.
+    /// </summary>
+    private static bool IsGlobalSort(string? sortBy)
+        => sortBy is "likes" or "newest" or "price_asc" or "price_desc" or "popular";
+
+    /// <summary>
     /// Search across all sources in parallel, merge and return paginated results.
     /// </summary>
     public async Task<SearchResponse> SearchAsync(SearchRequest request, CancellationToken ct = default)
@@ -27,23 +35,32 @@ public class SearchService(IEnumerable<IModelSourceAdapter> adapters, ILogger<Se
             filteredAdapters = filteredAdapters.Where(a => request.Sources.Contains(a.Source.ToString(), StringComparer.OrdinalIgnoreCase));
         }
 
-        // Query all sources in parallel
-        var adapterCount = filteredAdapters.Count();
-        var isRelevance = string.IsNullOrEmpty(request.SortBy) || request.SortBy == "relevance";
+        // --- Pagination strategy depends on sort mode ---
+        // For GLOBAL sorts (likes, newest, price) we need a correct cross-source ordering.
+        // We can't rely on each adapter's own page N because source A's page-2 item can
+        // have more likes than source B's page-1 item. So we ask each source for a large
+        // enough window (page × pageSize items starting from page 1), merge everything,
+        // sort globally, then skip/take for the requested page.
+        //
+        // For RELEVANCE we keep the lightweight per-source-page approach + interleaving,
+        // since there is no meaningful global relevance metric.
+        var globalSort = IsGlobalSort(request.SortBy);
 
-        // Fix for diminishing results: Request full page size from EACH source.
-        // This ensures that if some sources return 0 items, we can still fill the page with items from other sources.
-        // Trade-off: Some items from high-volume sources might be skipped in the interleaving process between pages,
-        // but this guarantees full pages and consistency.
-        var perSourcePageSize = request.PageSize;
+        // How many items to request from each source
+        var perSourcePageSize = globalSort
+            ? request.Page * request.PageSize   // large window so we can paginate within the merged set
+            : request.PageSize;                 // one page per source is enough for relevance
+
+        // Which page to request from the adapter
+        var adapterPage = globalSort ? 1 : request.Page;
 
         var searchTasks = filteredAdapters.Select(adapter =>
-            SearchSourceSafeAsync(adapter, query, request.Page, perSourcePageSize, request.SortBy, ct)
+            SearchSourceSafeAsync(adapter, query, adapterPage, perSourcePageSize, request.SortBy, ct)
         );
 
         var results = await Task.WhenAll(searchTasks);
 
-        return MergeResults(results, request);
+        return MergeResults(results, request, globalSort);
     }
 
     /// <summary>
@@ -69,7 +86,7 @@ public class SearchService(IEnumerable<IModelSourceAdapter> adapters, ILogger<Se
 
         var results = await Task.WhenAll(trendingTasks);
 
-        return MergeResults(results, request);
+        return MergeResults(results, request, false);
     }
 
     private async Task<AdapterSearchResult> SearchSourceSafeAsync(
@@ -126,46 +143,85 @@ public class SearchService(IEnumerable<IModelSourceAdapter> adapters, ILogger<Se
         }
     }
 
-    private SearchResponse MergeResults(AdapterSearchResult[] results, SearchRequest request)
+    private SearchResponse MergeResults(AdapterSearchResult[] results, SearchRequest request, bool globalSort)
     {
-        // Merge all items from all sources
-        var allItems = results.SelectMany(r => r.Items).ToList();
+        // 1. Convert each adapter's results into a queue, applying client-side filters
+        var filteredSourceQueues = results
+            .Select(r =>
+            {
+                var validItems = r.Items.Where(m =>
+                {
+                    if (request.FreeOnly == true && !m.IsFree) return false;
+                    if (request.MinPrice.HasValue && m.Price < request.MinPrice.Value) return false;
+                    if (request.MaxPrice.HasValue && m.Price > request.MaxPrice.Value) return false;
+                    return true;
+                }).ToList();
 
-        // Apply client-side filters
-        if (request.FreeOnly == true)
-            allItems = [.. allItems.Where(m => m.IsFree)];
+                return new { Source = r.Source, Queue = new Queue<ModelDto>(validItems), OriginalCount = r.TotalCount };
+            })
+            .Where(q => q.Queue.Count > 0)
+            .ToList();
 
-        if (request.MinPrice.HasValue)
-            allItems = [.. allItems.Where(m => m.Price >= request.MinPrice.Value)];
+        var mergedItems = new List<ModelDto>();
+        var totalCount = results.Sum(r => r.TotalCount);
 
-        if (request.MaxPrice.HasValue)
-            allItems = [.. allItems.Where(m => m.Price <= request.MaxPrice.Value)];
-
-        // Sort merged results
-        if (string.IsNullOrEmpty(request.SortBy) || request.SortBy == "relevance")
+        if (!globalSort)
         {
             // Smart mixing: Interleave results from different sources (Round Robin)
-            // This ensures the first page shows a balanced mix of sources.
-            allItems = InterleaveBySource(allItems);
+            while (filteredSourceQueues.Any(q => q.Queue.Count > 0))
+            {
+                foreach (var group in filteredSourceQueues)
+                {
+                    if (group.Queue.Count > 0)
+                    {
+                        mergedItems.Add(group.Queue.Dequeue());
+                    }
+                }
+            }
         }
         else
         {
-            allItems = request.SortBy switch
-            {
-                "newest" => [.. allItems.OrderByDescending(m => m.CreatedAtSource)],
+            // N-way Streaming Merge for Global Sorts
+            // Instead of throwing all items into one bucket and running OrderBy() (which breaks
+            // when APIs don't return strictly monotonic liked/priced items), we stream the top
+            // item off the queue of whichever adapter currently has the "best" item.
+            var sortBy = request.SortBy ?? "newest";
 
-                "likes" => [.. allItems.OrderByDescending(m => m.LikeCount)],
-                "price_asc" => [.. allItems.OrderBy(m => m.Price)],
-                "price_desc" => [.. allItems.OrderByDescending(m => m.Price)],
-                _ => allItems 
-            };
+            while (filteredSourceQueues.Any(q => q.Queue.Count > 0))
+            {
+                // Find the queue whose first element is the "best" according to the sort criteria
+                var bestQueue = filteredSourceQueues
+                    .Where(q => q.Queue.Count > 0)
+                    .Select(q => q) // Identity
+                    .Aggregate((currentBest, next) =>
+                    {
+                        var bestItem = currentBest.Queue.Peek();
+                        var nextItem = next.Queue.Peek();
+
+                        bool nextIsBetter = sortBy switch
+                        {
+                            "newest" => nextItem.CreatedAtSource > bestItem.CreatedAtSource,
+                            "popular" => nextItem.LikeCount > bestItem.LikeCount,
+                            "likes" => nextItem.LikeCount > bestItem.LikeCount,
+                            "price_asc" => nextItem.Price < bestItem.Price,
+                            "price_desc" => nextItem.Price > bestItem.Price,
+                            _ => false // Default fallback
+                        };
+
+                        return nextIsBetter ? next : currentBest;
+                    });
+
+                // Dequeue the best item and add it to the merged stream
+                mergedItems.Add(bestQueue.Queue.Dequeue());
+            }
         }
 
-        var totalCount = results.Sum(r => r.TotalCount);
         var totalPages = totalCount > 0 ? (int)Math.Ceiling((double)totalCount / request.PageSize) : 1;
 
-        // Apply pagination slicing (Take only, skip is already handled by adapters)
-        var pagedItems = allItems
+        // Skip to the correct page
+        var skip = globalSort ? (request.Page - 1) * request.PageSize : 0;
+        var pagedItems = mergedItems
+            .Skip(skip)
             .Take(request.PageSize)
             .ToList();
 

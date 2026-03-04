@@ -1,49 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
 
 :root {
-  /* Color palette - Dark modern theme - Blueish */
-  --bg-primary: #1a1a2e;
-  --bg-secondary: #16213e;
-  --bg-card: #222240;
-  --bg-card-hover: #2a2a4a;
-  --bg-glass: rgba(26, 26, 46, 0.85);
-  --bg-input: #1a1a2e;
-  --bg-sidebar: #131326;
-  
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0d0;
-  --text-muted: #6b6b8d;
-  --text-accent: #3eb8ff;
-  
-  --accent-primary: #3eb8ff;
-  --accent-secondary: #0072ff;
-  --accent-gradient: linear-gradient(135deg, #3eb8ff 0%, #0072ff 100%);
-  --accent-glow: rgba(62, 184, 255, 0.3);
-  
+  /* Color palette — Deep midnight industrial-luxe */
+  --bg-primary: #0c0e1a;
+  --bg-secondary: #121428;
+  --bg-card: #181b30;
+  --bg-card-hover: #1e2240;
+  --bg-glass: rgba(12, 14, 26, 0.82);
+  --bg-input: rgba(18, 20, 40, 0.9);
+  --bg-sidebar: #0a0c18;
+  --bg-hover: rgba(30, 34, 64, 0.6);
+  --bg-tertiary: rgba(24, 27, 48, 0.8);
+
+  --text-primary: #eef0ff;
+  --text-secondary: #a0a4c8;
+  --text-muted: #5c6090;
+  --text-accent: #5eead4;
+
+  --accent-primary: #14b8a6;
+  --accent-secondary: #06b6d4;
+  --accent-hover: #0d9488;
+  --accent-gradient: linear-gradient(135deg, #14b8a6 0%, #06b6d4 50%, #38bdf8 100%);
+  --accent-glow: rgba(20, 184, 166, 0.25);
+  --accent-glow-strong: rgba(20, 184, 166, 0.5);
+
+  --warm-accent: #f59e0b;
+  --warm-glow: rgba(245, 158, 11, 0.2);
+
   --success: #10b981;
   --warning: #f59e0b;
-  --error: #ef4444;
+  --error: #f43f5e;
   --free-badge: #10b981;
   --paid-badge: #f59e0b;
-  
+
   --border: rgba(255, 255, 255, 0.06);
-  --border-focus: rgba(124, 58, 237, 0.5);
-  
-  --radius-sm: 6px;
-  --radius-md: 10px;
+  --border-color: rgba(255, 255, 255, 0.06);
+  --border-focus: rgba(20, 184, 166, 0.4);
+  --border-glow: rgba(20, 184, 166, 0.15);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
-  
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 20px var(--accent-glow);
-  
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 48px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 24px var(--accent-glow), 0 0 48px rgba(6, 182, 212, 0.1);
+  --shadow-card-hover: 0 8px 32px rgba(20, 184, 166, 0.12), 0 0 0 1px rgba(20, 184, 166, 0.15);
+
   --transition-fast: 150ms ease;
-  --transition-normal: 250ms ease;
-  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
-  
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --transition-normal: 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 450ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-elastic: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --font-display: 'Clash Display', 'Space Grotesk', sans-serif;
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
@@ -70,7 +83,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Background ambient effect */
+/* Ambient gradient orbs */
 body::before {
   content: '';
   position: fixed;
@@ -78,12 +91,28 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(ellipse at 20% 20%, rgba(62, 184, 255, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 80%, rgba(0, 114, 255, 0.06) 0%, transparent 60%),
-    radial-gradient(ellipse at 50% 50%, rgba(62, 184, 255, 0.04) 0%, transparent 60%);
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 10%, rgba(20, 184, 166, 0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 85% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(245, 158, 11, 0.025) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
+}
+
+/* Noise grain overlay for texture */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
 }
 
 #root {
@@ -104,17 +133,17 @@ a:hover {
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-card);
-  border-radius: 4px;
+  background: rgba(92, 96, 144, 0.3);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -136,7 +165,7 @@ a:hover {
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -159,6 +188,22 @@ a:hover {
   to { transform: rotate(360deg); }
 }
 
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 16px var(--accent-glow); }
+  50% { box-shadow: 0 0 32px var(--accent-glow-strong); }
+}
+
+@keyframes subtleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .fade-in {
   animation: fadeIn 0.4s ease forwards;
 }
@@ -166,5 +211,3 @@ a:hover {
 .slide-up {
   animation: slideUp 0.5s ease forwards;
 }
-
-

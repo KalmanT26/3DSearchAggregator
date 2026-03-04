@@ -280,3 +280,15 @@ export async function removeFromCollection(collectionId: string, itemId: string)
     });
     if (!res.ok) throw new Error(`Failed to remove from collection: ${res.status}`);
 }
+
+// =====================
+// Health Check (Keep-Alive)
+// =====================
+
+export async function pingHealth(): Promise<void> {
+    try {
+        await fetch(`${API_BASE}/health`);
+    } catch (err) {
+        console.warn('Keep-alive ping failed', err);
+    }
+}

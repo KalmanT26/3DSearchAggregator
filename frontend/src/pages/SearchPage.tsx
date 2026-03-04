@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import ModelCard from '../components/ModelCard';
 import ModelDetail from '../components/ModelDetail';
 import Logo from '../components/Logo';
+import { cn } from '../utils/classnames';
 import './SearchPage.css';
 
 const SORT_OPTIONS = [
@@ -226,12 +227,12 @@ export default function SearchPage() {
             <div className="search-layout">
                 {/* Mobile Filter Overlay */}
                 <div 
-                    className={`search-sidebar-overlay ${isMobileFilterOpen ? 'open' : ''}`} 
+                    className={cn('search-sidebar-overlay', isMobileFilterOpen && 'open')} 
                     onClick={() => setIsMobileFilterOpen(false)}
                 ></div>
 
                 {/* Sidebar */}
-                <aside className={`search-sidebar ${showFilters ? '' : 'collapsed'} ${isMobileFilterOpen ? 'mobile-open' : ''}`}>
+                <aside className={cn('search-sidebar', !showFilters && 'collapsed', isMobileFilterOpen && 'mobile-open')}>
                     <div className="search-sidebar__mobile-header">
                         <h2>Filters</h2>
                         <button className="search-sidebar__close" onClick={() => setIsMobileFilterOpen(false)}>✕</button>

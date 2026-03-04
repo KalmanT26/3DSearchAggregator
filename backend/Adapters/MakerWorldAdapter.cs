@@ -67,7 +67,16 @@ public class MakerWorldAdapter : IModelSourceAdapter
 
         try
         {
-            var url = $"{SearchApiUrl}?keyword={Uri.EscapeDataString(query)}&limit={pageSize}&offset={offset}";
+            // Map sort parameter to MakerWorld's API sort field
+            var apiSort = sort switch
+            {
+                "likes" => "&sortField=likesCount&sortOrder=desc",
+                "popular" => "&sortField=downloadCount&sortOrder=desc",
+                "newest" => "&sortField=createTime&sortOrder=desc",
+                _ => ""  // default relevance
+            };
+
+            var url = $"{SearchApiUrl}?keyword={Uri.EscapeDataString(query)}&limit={pageSize}&offset={offset}{apiSort}";
 
             var json = await FetchJsonAsync(url, ct);
             if (json == null) return result;

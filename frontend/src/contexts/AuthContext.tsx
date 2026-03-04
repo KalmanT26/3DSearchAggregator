@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { postGoogleLogin, postManualLogin, postManualRegister, getMe, type UserDto } from '../api';
 
 interface AuthContextType {
@@ -76,8 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
     }, []);
 
+    const contextValue = useMemo(() => ({
+        user, token, isLoading, loginGoogle, loginManual, registerManual, logout
+    }), [user, token, isLoading, loginGoogle, loginManual, registerManual, logout]);
+
     return (
-        <AuthContext.Provider value={{ user, token, isLoading, loginGoogle, loginManual, registerManual, logout }}>
+        <AuthContext.Provider value={contextValue}>
             {children}
         </AuthContext.Provider>
     );

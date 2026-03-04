@@ -30,7 +30,7 @@ public class MyMiniFactoryAdapter : IModelSourceAdapter
             {
                 "newest" => "date",
                 "popular" => "popularity",
-                "likes" => "popularity",
+                "likes" => "likes",
                 _ => ""
             };
 

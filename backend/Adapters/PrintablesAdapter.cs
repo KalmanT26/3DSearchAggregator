@@ -35,14 +35,13 @@ public class PrintablesAdapter(HttpClient http, ILogger<PrintablesAdapter> logge
         var offset = (page - 1) * pageSize;
 
         // Map sort parameter to Printables ordering enum (SearchChoicesEnum)
-        // Default (null) = relevance/best match
         var ordering = sort switch
         {
             "newest" => "latest",
-            "likes" => "likes_count",
-            "popular" => "download_count",
-            "price_asc" => "price_low_to_high",
-            "price_desc" => "price_high_to_low",
+            "likes" => "popular",
+            "popular" => "popular",
+            "price_asc" => (string?)null,
+            "price_desc" => (string?)null,
             _ => (string?)null  // null = default relevance
         };
 

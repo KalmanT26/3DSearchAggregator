@@ -28,18 +28,20 @@
 }
 
 .coldetail-name {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
 }
 
 .coldetail-desc {
     color: var(--text-secondary);
-    margin-top: 0.3rem;
+    margin-top: 0.4rem;
     font-size: 0.95rem;
 }
 
 .coldetail-meta {
-    color: var(--text-tertiary);
+    color: var(--text-muted);
     font-size: 0.85rem;
     margin-top: 0.5rem;
 }
@@ -58,13 +60,20 @@
 }
 
 .btn-cancel {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
+    background: rgba(24, 27, 48, 0.6);
+    border: 1px solid var(--border);
     color: var(--text-secondary);
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     font-size: 0.9rem;
+    font-family: var(--font-sans);
+    transition: all var(--transition-normal);
+}
+
+.btn-cancel:hover {
+    border-color: var(--text-muted);
+    color: var(--text-primary);
 }
 
 /* Grid */
@@ -75,48 +84,65 @@
 }
 
 .coldetail-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
     overflow: hidden;
-    transition: border-color 0.2s, transform 0.2s;
+    transition: all var(--transition-normal);
+    animation: fadeIn 0.4s ease both;
 }
 
 .coldetail-card:hover {
-    border-color: var(--accent-primary);
-    transform: translateY(-2px);
+    border-color: rgba(20, 184, 166, 0.25);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
 }
 
 .coldetail-card__img {
     aspect-ratio: 4/3;
     overflow: hidden;
     cursor: pointer;
-    background: var(--bg-tertiary);
+    background: var(--bg-secondary);
+    position: relative;
+}
+
+/* Gradient overlay at bottom */
+.coldetail-card__img::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(to top, rgba(12, 14, 26, 0.5) 0%, transparent 100%);
+    pointer-events: none;
 }
 
 .coldetail-card__img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s;
+    transition: transform var(--transition-slow);
 }
 
 .coldetail-card:hover .coldetail-card__img img {
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
 .coldetail-card__body {
-    padding: 0.75rem;
+    padding: 0.85rem 1rem;
 }
 
 .coldetail-card__source {
     display: inline-block;
-    padding: 0.15rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.7rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: var(--radius-xl);
+    font-size: 0.68rem;
     font-weight: 600;
+    font-family: var(--font-sans);
     color: white;
     margin-bottom: 0.4rem;
+    letter-spacing: 0.02em;
 }
 
 .coldetail-card__title {
@@ -139,10 +165,12 @@
     color: var(--accent-primary);
     text-decoration: none;
     font-size: 0.8rem;
+    font-family: var(--font-sans);
+    transition: color var(--transition-fast);
 }
 
 .coldetail-card__link:hover {
-    text-decoration: underline;
+    color: var(--text-accent);
 }
 
 .coldetail-card__remove {
@@ -151,12 +179,12 @@
     cursor: pointer;
     font-size: 0.9rem;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-normal);
     padding: 0.2rem;
 }
 
 .coldetail-card:hover .coldetail-card__remove {
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .coldetail-card__remove:hover {

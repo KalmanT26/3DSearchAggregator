@@ -142,6 +142,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// Simple endpoint to keep the Render service awake
+app.MapGet("/api/health", () => Results.Ok(new { status = "healthy", time = DateTime.UtcNow }));
+
 try
 {
     app.Run();
