@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -66,16 +67,13 @@ builder.Services.AddHttpClient<PrintablesAdapter>(client =>
     client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 });
 
-builder.Services.AddHttpClient<MakerWorldAdapter>(client =>
-{
-    client.DefaultRequestHeaders.Add("User-Agent", userAgent);
-    client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,application/json,*/*;q=0.8");
-    client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
-}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-{
-    AutomaticDecompression = System.Net.DecompressionMethods.All,
-    AllowAutoRedirect = true,
-});
+builder.Services.AddHttpClient<MakerWorldAdapter>()
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        AutomaticDecompression = DecompressionMethods.All,
+        UseCookies = true,
+        AllowAutoRedirect = true,
+    });
 
 builder.Services.AddScoped<IModelSourceAdapter, ThingiverseAdapter>();
 builder.Services.AddScoped<IModelSourceAdapter, Cults3DAdapter>();

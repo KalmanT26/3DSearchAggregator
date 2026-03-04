@@ -30,33 +30,30 @@ public class MakerWorldAdapter : IModelSourceAdapter
     /// <summary>Ensures the standard browser headers are present.</summary>
     private void EnsureHeaders()
     {
-        _http.DefaultRequestHeaders.Remove("User-Agent");
-        _http.DefaultRequestHeaders.Add("User-Agent",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
+        _http.DefaultRequestHeaders.Clear();
 
+        // Use a very recent Chrome User-Agent
+        _http.DefaultRequestHeaders.Add("User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36");
+
+        _http.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
+        _http.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
+        _http.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br, zstd");
+        
         _http.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
 
-        if (!_http.DefaultRequestHeaders.Contains("Origin"))
-            _http.DefaultRequestHeaders.Add("Origin", BaseUrl);
+        _http.DefaultRequestHeaders.Add("Origin", BaseUrl);
+        _http.DefaultRequestHeaders.Add("Connection", "keep-alive");
+        _http.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
 
-        if (!_http.DefaultRequestHeaders.Contains("Sec-Ch-Ua"))
-            _http.DefaultRequestHeaders.Add("Sec-Ch-Ua",
-                "\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\"121\", \"Chromium\";v=\"121\"");
-
-        if (!_http.DefaultRequestHeaders.Contains("Sec-Ch-Ua-Mobile"))
-            _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Mobile", "?0");
-
-        if (!_http.DefaultRequestHeaders.Contains("Sec-Ch-Ua-Platform"))
-            _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Platform", "\"Windows\"");
-
-        if (!_http.DefaultRequestHeaders.Contains("Sec-Fetch-Site"))
-            _http.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
-
-        if (!_http.DefaultRequestHeaders.Contains("Sec-Fetch-Mode"))
-            _http.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "cors");
-
-        if (!_http.DefaultRequestHeaders.Contains("Sec-Fetch-Dest"))
-            _http.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "empty");
+        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua",
+            "\"Not(A:Brand\";v=\"99\", \"Google Chrome\";v=\"133\", \"Chromium\";v=\"133\"");
+        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Mobile", "?0");
+        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Platform", "\"Windows\"");
+        
+        _http.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
+        _http.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "cors");
+        _http.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "empty");
     }
 
     public async Task<AdapterSearchResult> SearchAsync(string query, int page = 1, int pageSize = 20,
