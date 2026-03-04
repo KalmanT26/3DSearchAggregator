@@ -28,32 +28,36 @@ public class MakerWorldAdapter : IModelSourceAdapter
 
     public ModelSource Source => ModelSource.MakerWorld;
 
-    /// <summary>Ensures the standard browser headers are present.</summary>
+    /// <summary>Ensures Chrome 145 desktop browser headers are present to bypass Cloudflare.</summary>
     private void EnsureHeaders()
     {
         _http.DefaultRequestHeaders.Clear();
 
-        // Use a mobile User-Agent (often less strictly challenged)
+        // Chrome 145 on Windows (desktop) — matches browser-curl skill fingerprint
         _http.DefaultRequestHeaders.Add("User-Agent",
-            "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Mobile Safari/537.36");
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36");
 
+        // Client Hints (Chrome 145 GREASE brand)
+        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua",
+            "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"");
+        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Mobile", "?0");
+        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Platform", "\"Windows\"");
+
+        // Standard request headers
         _http.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
         _http.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
-        
-        _http.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
+        // Note: Accept-Encoding is handled by AutomaticDecompression in HttpClientHandler
 
+        _http.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
         _http.DefaultRequestHeaders.Add("Origin", BaseUrl);
 
-        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua",
-            "\"Not(A:Brand\";v=\"99\", \"Google Chrome\";v=\"133\", \"Chromium\";v=\"133\"");
-        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Mobile", "?1");
-        _http.DefaultRequestHeaders.Add("Sec-Ch-Ua-Platform", "\"Android\"");
-        
+        // Sec-Fetch metadata for XHR/fetch API calls (same-origin API)
         _http.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
         _http.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "cors");
         _http.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "empty");
-        
-        // Add additional browser headers
+
+        // Additional fingerprint headers
+        _http.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
         _http.DefaultRequestHeaders.Add("Priority", "u=1, i");
         _http.DefaultRequestHeaders.Add("DNT", "1");
     }
@@ -232,7 +236,9 @@ public class MakerWorldAdapter : IModelSourceAdapter
 
         if (response.StatusCode == HttpStatusCode.Forbidden)
         {
-            _logger.LogError("MakerWorld: Got 403 (Cloudflare) for {Url}. Blocked.", url);
+            var body = await response.Content.ReadAsStringAsync(ct);
+            var snippet = body.Length > 300 ? body[..300] : body;
+            _logger.LogError("MakerWorld: Got 403 for {Url}. Response snippet: {Snippet}", url, snippet);
             return null;
         }
 
